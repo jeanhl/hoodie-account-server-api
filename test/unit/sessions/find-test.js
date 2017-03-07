@@ -61,5 +61,28 @@ test('findSession', function (group) {
     .catch(t.error)
   })
 
+  group.test('user document cached after first request', function (t) {
+    var dbGetStub = simple.stub().resolveWith({
+      salt: 'salt123'
+    })
+    var state = {
+      secret: 'secret',
+      db: {
+        get: dbGetStub
+      }
+    }
+
+    findSession(state, 'sessionid')
+
+    .catch(function () {
+      return findSession(state, 'sessionid')
+    })
+
+    .catch(function () {
+      t.is(dbGetStub.callCount, 1)
+      t.end()
+    })
+  })
+
   group.end()
 })
